@@ -1,6 +1,6 @@
-import 'package:conversai/app/constants.dart';
+import 'package:conversai/app/constants/constants.dart';
 import 'package:conversai/app/routes/app_router.dart';
-import 'package:conversai/app/routes/app_routes.dart';
+import 'package:conversai/config/wrapper.dart';
 import 'package:conversai/firebase_options.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
               borderSide: BorderSide.none,
             ),
           )),
-      initialRoute: AppRoutes.welcome,
+      home: const Wrapper(),
       onGenerateRoute: AppRouter.generateRoute,
     );
   }

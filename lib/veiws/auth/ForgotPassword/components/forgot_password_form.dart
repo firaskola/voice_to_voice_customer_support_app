@@ -3,7 +3,7 @@ import 'package:conversai/config/models/response_model.dart';
 import 'package:conversai/utils/custom_text_feild.dart';
 import 'package:conversai/utils/custom_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:conversai/app/constants.dart';
+import 'package:conversai/app/constants/constants.dart';
 
 class ForgotPasswordForm extends StatefulWidget {
   const ForgotPasswordForm({Key? key}) : super(key: key);

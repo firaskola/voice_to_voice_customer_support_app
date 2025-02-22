@@ -4,7 +4,7 @@ import 'package:conversai/utils/custom_text_feild.dart';
 import 'package:conversai/utils/custom_widgets.dart';
 import 'package:conversai/veiws/auth/components/already_have_an_account_acheck.dart';
 import 'package:flutter/material.dart';
-import 'package:conversai/app/constants.dart';
+import 'package:conversai/app/constants/constants.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({Key? key}) : super(key: key);
@@ -32,7 +32,8 @@ class _LoginFormState extends State<LoginForm> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(response.message)),
       );
-      // Navigate to home or dashboard page
+
+      Navigator.pushReplacementNamed(context, '/home');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(response.message)),

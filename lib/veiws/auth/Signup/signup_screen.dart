@@ -1,4 +1,4 @@
-import 'package:conversai/app/constants.dart';
+import 'package:conversai/app/constants/constants.dart';
 import 'package:conversai/app/responsive.dart';
 import 'package:conversai/veiws/auth/components/background.dart';
 import 'package:flutter/material.dart';

@@ -1,4 +1,4 @@
-import 'package:conversai/app/constants.dart';
+import 'package:conversai/app/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:conversai/app/constants.dart';
+import 'package:conversai/app/constants/constants.dart';
 
 class CustomTextField extends StatelessWidget {
   final String hintText;

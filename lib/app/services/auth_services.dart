@@ -1,3 +1,4 @@
+import 'package:conversai/app/constants/firebase_constants.dart';
 import 'package:conversai/config/models/response_model.dart';
 import 'package:conversai/config/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -30,20 +31,20 @@ class AuthService {
         );
 
         await _firestore
-            .collection('users')
+            .collection(AppFirebaseConstants.userCollectionName)
             .doc(user.uid)
             .set(newUser.toJson());
       }
 
       return ResponseModel(
         status: true,
-        message: "User registered successfully!",
+        message: AppFirebaseConstants.signUpSuccessMessage,
         data: userCredential.user?.uid,
       );
     } on FirebaseAuthException catch (e) {
       return ResponseModel(
         status: false,
-        message: e.message ?? "Registration failed",
+        message: e.message ?? AppFirebaseConstants.unexpectedErrorMessage,
         data: null,
       );
     }
@@ -64,9 +65,14 @@ class AuthService {
         data: userCredential.user?.uid,
       );
     } on FirebaseAuthException catch (e) {
+      String errorMessage =
+          e.code == "wrong-password" || e.code == "user-not-found"
+              ? AppFirebaseConstants.invalidCredentialMessage
+              : e.message ?? AppFirebaseConstants.unexpectedErrorMessage;
+
       return ResponseModel(
         status: false,
-        message: e.message ?? "Login failed",
+        message: errorMessage,
         data: null,
       );
     }
@@ -83,7 +89,7 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       return ResponseModel(
         status: false,
-        message: e.message ?? "Password reset failed",
+        message: e.message ?? AppFirebaseConstants.unexpectedErrorMessage,
       );
     }
   }
@@ -99,7 +105,7 @@ class AuthService {
     } catch (e) {
       return ResponseModel(
         status: false,
-        message: "Sign-out failed: ${e.toString()}",
+        message: AppFirebaseConstants.unexpectedErrorMessage,
       );
     }
   }

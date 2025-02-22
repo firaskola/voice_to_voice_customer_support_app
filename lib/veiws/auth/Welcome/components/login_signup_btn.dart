@@ -1,4 +1,4 @@
-import 'package:conversai/app/constants.dart';
+import 'package:conversai/app/constants/constants.dart';
 import 'package:flutter/material.dart';
 class LoginAndSignupBtn extends StatelessWidget {
   const LoginAndSignupBtn({
