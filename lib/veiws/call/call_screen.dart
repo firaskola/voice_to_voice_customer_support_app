@@ -1,6 +1,7 @@
 import 'package:conversai/app/helpers/permissions_helper.dart';
 import 'package:conversai/app/services/speech_to_text_service.dart';
 import 'package:conversai/app/services/text_to_speech_service.dart';
+import 'package:conversai/utils/custom_nav_drawer.dart';
 import 'package:conversai/utils/mic_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -16,11 +17,11 @@ class TapToTalkScreen extends StatefulWidget {
 class _TapToTalkScreenState extends State<TapToTalkScreen> {
   bool isListening = false;
   bool isProcessing = false;
-  double _circleSize = 80;
   String displayText = "Hold & Speak";
   FlutterTts flutterTts = FlutterTts();
   stt.SpeechToText speech = stt.SpeechToText();
   String transcription = "";
+  List<Map<String, String>> chatMessages = []; // Stores chat history
 
   @override
   void initState() {
@@ -51,7 +52,6 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
     if (await PermissionsHelper.isMicrophonePermissionGranted()) {
       setState(() {
         isListening = true;
-        _circleSize = 120;
         displayText = "Listening...";
       });
 
@@ -71,7 +71,6 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
   void _onTapUp() async {
     setState(() {
       isListening = false;
-      _circleSize = 80;
       isProcessing = true;
       displayText = "Processing...";
     });
@@ -79,8 +78,18 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
     speech.stop();
 
     try {
+      // Add the user's prompt to the chat
+      setState(() {
+        chatMessages.add({"role": "user", "message": transcription});
+      });
+
       // Send the transcription to OpenAI API
       final responseText = await _getOpenAIResponse(transcription);
+
+      // Add the assistant's response to the chat
+      setState(() {
+        chatMessages.add({"role": "assistant", "message": responseText});
+      });
 
       // Speak the response using TTS
       await TextToSpeechService.speak(flutterTts, responseText);
@@ -100,7 +109,7 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
   }
 
   Future<String> _getOpenAIResponse(String prompt) async {
-    const apiKey = "api key"; // Replace with your OpenAI API key
+    const apiKey = "your-openai-api-key"; // Replace with your OpenAI API key
     const apiUrl = "https://api.openai.com/v1/chat/completions";
 
     final response = await http.post(
@@ -131,75 +140,62 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Voice Chat"),
+      ),
+      drawer: NavDrawer(),
       backgroundColor: Colors.white,
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Center(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
-              child: isProcessing
-                  ? _buildProcessingShape()
-                  : TweenAnimationBuilder(
-                      tween: Tween<double>(begin: 80, end: _circleSize),
-                      duration: const Duration(milliseconds: 300),
-                      builder: (context, size, child) {
-                        return Container(
-                          width: size,
-                          height: size,
-                          decoration: BoxDecoration(
-                            color: isListening ? Colors.black : Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
-                        );
-                      },
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.all(16),
+              itemCount: chatMessages.length,
+              itemBuilder: (context, index) {
+                final message = chatMessages[index];
+                final isUser = message["role"] == "user";
+                return Align(
+                  alignment:
+                      isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(vertical: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isUser ? Colors.blue : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    child: Text(
+                      message["message"]!,
+                      style: TextStyle(
+                        color: isUser ? Colors.white : Colors.black,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            displayText,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          if (isProcessing)
-            Text(
-              "Transcription: $transcription",
-              style: const TextStyle(fontSize: 16, color: Colors.black),
+          Container(
+            padding: EdgeInsets.all(16),
+            color: Colors.grey[200],
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    displayText,
+                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                  ),
+                ),
+                MicButton(
+                  onTapDown: _onTapDown,
+                  onTapUp: _onTapUp,
+                ),
+              ],
             ),
-          const SizedBox(height: 50),
-          MicButton(
-            onTapDown: _onTapDown,
-            onTapUp: _onTapUp,
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildProcessingShape() {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            shape: BoxShape.rectangle,
-            color: Colors.blue.withOpacity(0.7),
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.rectangle,
-            color: Colors.blue,
-            borderRadius: BorderRadius.circular(5),
-          ),
-        ),
-      ],
     );
   }
 }

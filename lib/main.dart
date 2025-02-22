@@ -2,7 +2,6 @@ import 'package:conversai/app/constants/constants.dart';
 import 'package:conversai/app/routes/app_router.dart';
 import 'package:conversai/config/wrapper.dart';
 import 'package:conversai/firebase_options.dart';
-import 'package:conversai/veiws/call/call_screen.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +46,7 @@ class MyApp extends StatelessWidget {
               borderSide: BorderSide.none,
             ),
           )),
-      home: TapToTalkScreen(),
+      home: const Wrapper(),
       onGenerateRoute: AppRouter.generateRoute,
     );
   }
