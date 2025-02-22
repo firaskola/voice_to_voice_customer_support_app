@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-feature android:name="android.hardware.microphone" android:required="true"/>
+
+
+
     <application
         android:label="conversai"
         android:name="${applicationName}"
@@ -39,7 +44,12 @@
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
+            
             <data android:mimeType="text/plain"/>
+        </intent>
+        <intent>
+            <action android:name="android.media.action.RECORD_SOUND"/> 
+            
         </intent>
     </queries>
 </manifest>
