@@ -5,6 +5,8 @@ import 'package:conversai/utils/mic_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class TapToTalkScreen extends StatefulWidget {
   @override
@@ -66,7 +68,7 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
     }
   }
 
-  void _onTapUp() {
+  void _onTapUp() async {
     setState(() {
       isListening = false;
       _circleSize = 80;
@@ -76,8 +78,11 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
 
     speech.stop();
 
-    Future.delayed(const Duration(seconds: 2), () async {
-      String responseText = "You said: $transcription";
+    try {
+      // Send the transcription to OpenAI API
+      final responseText = await _getOpenAIResponse(transcription);
+
+      // Speak the response using TTS
       await TextToSpeechService.speak(flutterTts, responseText);
 
       setState(() {
@@ -85,7 +90,42 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
         displayText = "Hold & Speak";
         transcription = "";
       });
-    });
+    } catch (e) {
+      setState(() {
+        isProcessing = false;
+        displayText = "Error: Tap to retry";
+      });
+      print("Error: $e");
+    }
+  }
+
+  Future<String> _getOpenAIResponse(String prompt) async {
+    const apiKey = "api key"; // Replace with your OpenAI API key
+    const apiUrl = "https://api.openai.com/v1/chat/completions";
+
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $apiKey",
+      },
+      body: jsonEncode({
+        "model": "gpt-3.5-turbo", // or "gpt-4"
+        "messages": [
+          {"role": "system", "content": "You are a helpful assistant."},
+          {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 150, // Limit response length
+        "temperature": 0.7, // Adjust creativity (0 = strict, 1 = creative)
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['choices'][0]['message']['content'];
+    } else {
+      throw Exception("Failed to fetch response: ${response.statusCode}");
+    }
   }
 
   @override
