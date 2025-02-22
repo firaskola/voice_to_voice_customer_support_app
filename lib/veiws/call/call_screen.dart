@@ -148,8 +148,7 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
   }
 
   Future<String> _getOpenAIResponse(String prompt) async {
-    const apiKey =
-        ""; // Replace with your OpenAI API key
+    const apiKey = ""; // Replace with your OpenAI API key
     const apiUrl = "https://api.openai.com/v1/chat/completions";
 
     final response = await http.post(

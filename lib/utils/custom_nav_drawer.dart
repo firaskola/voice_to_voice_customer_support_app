@@ -101,7 +101,8 @@ class _NavDrawerState extends State<NavDrawer> {
                     style: TextStyle(color: kPrimaryColor),
                   ),
                   onTap: () {
-                    Navigator.pushNamed(context, '/history');
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/history');
                   },
                 ),
                 const Divider(),
