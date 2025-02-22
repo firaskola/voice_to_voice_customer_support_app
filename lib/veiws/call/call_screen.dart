@@ -1,5 +1,10 @@
+import 'package:conversai/app/helpers/permissions_helper.dart';
+import 'package:conversai/app/services/speech_to_text_service.dart';
+import 'package:conversai/app/services/text_to_speech_service.dart';
+import 'package:conversai/utils/mic_button.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class TapToTalkScreen extends StatefulWidget {
   @override
@@ -11,29 +16,51 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
   bool isProcessing = false;
   double _circleSize = 80;
   String displayText = "Hold & Speak";
+  FlutterTts flutterTts = FlutterTts();
+  stt.SpeechToText speech = stt.SpeechToText();
+  String transcription = "";
 
   @override
   void initState() {
     super.initState();
     _requestMicrophonePermission();
+    _initializeTts();
+    _initializeSpeechToText();
   }
 
   Future<void> _requestMicrophonePermission() async {
-    var status = await Permission.microphone.request();
-    if (status.isGranted) {
-      print("Microphone permission granted");
+    await PermissionsHelper.requestMicrophonePermission();
+  }
+
+  Future<void> _initializeTts() async {
+    await TextToSpeechService.initializeTts(flutterTts);
+  }
+
+  Future<void> _initializeSpeechToText() async {
+    bool available = await SpeechToTextService.initializeSpeechToText(speech);
+    if (available) {
+      print("Speech-to-text initialized successfully");
     } else {
-      print("Microphone permission denied");
+      print("Speech-to-text initialization failed");
     }
   }
 
   void _onTapDown() async {
-    if (await Permission.microphone.isGranted) {
+    if (await PermissionsHelper.isMicrophonePermissionGranted()) {
       setState(() {
         isListening = true;
         _circleSize = 120;
         displayText = "Listening...";
       });
+
+      await speech.listen(
+        onResult: (result) {
+          setState(() {
+            transcription = result.recognizedWords;
+          });
+          print("Transcription: $transcription");
+        },
+      );
     } else {
       _requestMicrophonePermission();
     }
@@ -45,12 +72,18 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
       _circleSize = 80;
       isProcessing = true;
       displayText = "Processing...";
+    });
 
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          isProcessing = false;
-          displayText = "Hold & Speak";
-        });
+    speech.stop();
+
+    Future.delayed(const Duration(seconds: 2), () async {
+      String responseText = "You said: $transcription";
+      await TextToSpeechService.speak(flutterTts, responseText);
+
+      setState(() {
+        isProcessing = false;
+        displayText = "Hold & Speak";
+        transcription = "";
       });
     });
   }
@@ -88,23 +121,16 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
             displayText,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 50),
-          GestureDetector(
-            onTapDown: (_) => _onTapDown(),
-            onTapUp: (_) => _onTapUp(),
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.mic,
-                color: Colors.white,
-                size: 40,
-              ),
+          const SizedBox(height: 20),
+          if (isProcessing)
+            Text(
+              "Transcription: $transcription",
+              style: const TextStyle(fontSize: 16, color: Colors.black),
             ),
+          const SizedBox(height: 50),
+          MicButton(
+            onTapDown: _onTapDown,
+            onTapUp: _onTapUp,
           ),
         ],
       ),
