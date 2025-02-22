@@ -1,9 +1,15 @@
 import 'package:conversai/app/constants.dart';
-import 'package:conversai/veiws/auth/Welcome/welcome_screen.dart';
+import 'package:conversai/app/routes/app_router.dart';
+import 'package:conversai/app/routes/app_routes.dart';
+import 'package:conversai/firebase_options.dart';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -14,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Auth',
+      title: 'CoversAI',
       theme: ThemeData(
           primaryColor: kPrimaryColor,
           scaffoldBackgroundColor: Colors.white,
@@ -40,7 +46,8 @@ class MyApp extends StatelessWidget {
               borderSide: BorderSide.none,
             ),
           )),
-      home: const WelcomeScreen(),
+      initialRoute: AppRoutes.welcome,
+      onGenerateRoute: AppRouter.generateRoute,
     );
   }
 }

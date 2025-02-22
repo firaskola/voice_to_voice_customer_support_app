@@ -1,10 +1,5 @@
 import 'package:conversai/app/constants.dart';
 import 'package:flutter/material.dart';
-
-
-import '../../Login/login_screen.dart';
-import '../../Signup/signup_screen.dart';
-
 class LoginAndSignupBtn extends StatelessWidget {
   const LoginAndSignupBtn({
     Key? key,
@@ -16,14 +11,7 @@ class LoginAndSignupBtn extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) {
-                  return const LoginScreen();
-                },
-              ),
-            );
+            Navigator.pushNamed(context, '/login');
           },
           child: Text(
             "Login".toUpperCase(),
@@ -32,14 +20,7 @@ class LoginAndSignupBtn extends StatelessWidget {
         const SizedBox(height: 16),
         ElevatedButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) {
-                  return const SignUpScreen();
-                },
-              ),
-            );
+            Navigator.pushNamed(context, '/signup');
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: kPrimaryLightColor,

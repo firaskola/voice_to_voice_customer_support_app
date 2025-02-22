@@ -1,3 +1,5 @@
+import 'package:conversai/app/services/auth_services.dart';
+import 'package:conversai/config/models/response_model.dart';
 import 'package:conversai/utils/custom_text_feild.dart';
 import 'package:conversai/utils/custom_widgets.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,26 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
 
+  Future<void> _resetPassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    String email = _emailController.text.trim();
+    AuthService authService = AuthService();
+
+    ResponseModel response = await authService.resetPassword(email);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(response.message)),
+    );
+
+    if (response.status) {
+      // Navigate to login page after showing success message
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.pushReplacementNamed(context, '/login');
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -29,11 +51,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
           ),
           const SizedBox(height: defaultPadding),
           ElevatedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                //Implement password reset functionality
-              }
-            },
+            onPressed: _resetPassword,
             child: Text("Reset Password".toUpperCase()),
           ),
         ],
