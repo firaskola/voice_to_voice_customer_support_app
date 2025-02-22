@@ -1,16 +1,58 @@
+import 'package:conversai/app/constants/constants.dart';
+import 'package:conversai/app/helpers/cloud_firestore_helper.dart';
 import 'package:conversai/app/services/auth_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class NavDrawer extends StatelessWidget {
+class NavDrawer extends StatefulWidget {
+  const NavDrawer({Key? key}) : super(key: key);
+
+  @override
+  _NavDrawerState createState() => _NavDrawerState();
+}
+
+class _NavDrawerState extends State<NavDrawer> {
   final AuthService _authService = AuthService();
   final User? _user = FirebaseAuth.instance.currentUser;
+  final FirestoreHelper _firestoreHelper = FirestoreHelper();
 
-  NavDrawer({Key? key}) : super(key: key);
+  String _fullName = "User Name"; // Default placeholder
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserDetails();
+  }
+
+  Future<void> _fetchUserDetails() async {
+    if (_user == null) return;
+
+    try {
+      var userData = await _firestoreHelper.getUserData(_user!.uid);
+      if (userData != null && userData.containsKey('full_name')) {
+        setState(() {
+          _fullName = userData['full_name'];
+        });
+      }
+    } catch (e) {
+      print("Error fetching user details: $e");
+    }
+  }
 
   Future<void> _signOut(BuildContext context) async {
     await _authService.signOutUser();
-    Navigator.pushReplacementNamed(context, '/welcome'); // ✅ Using named route
+    Navigator.pushReplacementNamed(context, '/welcome');
+  }
+
+  Future<void> _startNewChat() async {
+    if (_user == null) {
+      print("User not logged in");
+      return;
+    }
+
+    final chatId = await _firestoreHelper.createNewChat(_user!.uid);
+    print("New chat created with ID: $chatId");
+    Navigator.pushReplacementNamed(context, '/chat');
   }
 
   @override
@@ -22,36 +64,62 @@ class NavDrawer extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                SizedBox(
-                  height: 45,
+                Container(
+                  color: kPrimaryColor,
+                  height: 200,
                 ),
+                const Divider(),
                 ListTile(
-                  leading: const Icon(Icons.call),
-                  title: const Text('New Call'),
+                  leading: const Icon(Icons.home, color: kPrimaryColor),
+                  title: const Text(
+                    'Home',
+                    style: TextStyle(color: kPrimaryColor),
+                  ),
                   onTap: () {
-                    Navigator.pushNamed(context, '/call'); // ✅ Named route
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/home');
                   },
                 ),
                 const Divider(),
                 ListTile(
-                  leading: const Icon(Icons.message),
-                  title: const Text('Messages'),
-                  onTap: () {
-                    Navigator.pushNamed(context, '/messages'); // ✅ Named route
+                  leading: const Icon(Icons.message, color: kPrimaryColor),
+                  title: const Text(
+                    'New Chat',
+                    style: TextStyle(color: kPrimaryColor),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/call');
+                    await _startNewChat();
                   },
                 ),
+                const Divider(),
                 ListTile(
-                  leading: const Icon(Icons.settings),
-                  title: const Text('Settings'),
+                  leading: const Icon(Icons.history, color: kPrimaryColor),
+                  title: const Text(
+                    'History',
+                    style: TextStyle(color: kPrimaryColor),
+                  ),
                   onTap: () {
-                    Navigator.pushNamed(context, '/settings'); // ✅ Named route
+                    Navigator.pushNamed(context, '/history');
                   },
                 ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.settings, color: kPrimaryColor),
+                  title: const Text(
+                    'Settings',
+                    style: TextStyle(color: kPrimaryColor),
+                  ),
+                  onTap: () {
+                    Navigator.pushNamed(context, '/settings');
+                  },
+                ),
+                const Divider(),
               ],
             ),
           ),
-
-          // 🔹 Sign Out Button (Before Profile Section)
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text(
@@ -60,10 +128,10 @@ class NavDrawer extends StatelessWidget {
             ),
             onTap: () => _signOut(context),
           ),
-
-          // 🔹 Profile Section (At the Bottom)
+          const Divider(),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.only(
+                left: 16.0, bottom: 32, top: 16, right: 16),
             child: Row(
               children: [
                 CircleAvatar(
@@ -78,15 +146,19 @@ class NavDrawer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _user?.displayName ?? "User Name",
+                      _fullName, // Updated to use fetched name
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        color: kPrimaryColor,
                       ),
                     ),
                     Text(
                       _user?.email ?? "email@example.com",
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: kPrimaryColor.withOpacity(0.7),
+                      ),
                     ),
                   ],
                 ),

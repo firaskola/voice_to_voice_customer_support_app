@@ -1,5 +1,5 @@
-
 import 'package:conversai/veiws/call/call_screen.dart';
+import 'package:conversai/veiws/home/Home.dart';
 import 'package:flutter/material.dart';
 import 'package:conversai/veiws/auth/ForgotPassword/forgot_password_screen.dart';
 import 'package:conversai/veiws/auth/Login/login_screen.dart';
@@ -23,7 +23,13 @@ class AppRouter {
       case AppRoutes.forgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
       case AppRoutes.home:
-        return MaterialPageRoute(builder: (_) =>  TapToTalkScreen());
+        return MaterialPageRoute(
+          builder: (_) => const Home(),
+          settings: settings,
+          fullscreenDialog: true,
+        );
+      case AppRoutes.call:
+        return MaterialPageRoute(builder: (_) => TapToTalkScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(

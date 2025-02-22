@@ -1,3 +1,4 @@
+import 'package:conversai/app/constants/constants.dart';
 import 'package:flutter/material.dart';
 
 class MicButton extends StatelessWidget {
@@ -14,13 +15,13 @@ class MicButton extends StatelessWidget {
       child: Container(
         width: 80,
         height: 80,
-        decoration: BoxDecoration(
-          color: Colors.blue,
+        decoration: const BoxDecoration(
+          color: kPrimaryColor,
           shape: BoxShape.circle,
         ),
         child: const Icon(
           Icons.mic,
-          color: Colors.white,
+          color: kPrimaryLightColor,
           size: 40,
         ),
       ),
