@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "5120326931",
+    "project_id": "conversai-5d653",
+    "storage_bucket": "conversai-5d653.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5120326931:android:c1e5c51b6342dfadd46ee6",
+        "android_client_info": {
+          "package_name": "com.example.conversai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVQUA4OBIEuTYVIgGeGHKzlxtTs_g4kYE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

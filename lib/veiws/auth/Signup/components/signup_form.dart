@@ -1,92 +1,71 @@
-import 'package:conversai/app/constants.dart';
+import 'package:conversai/utils/custom_text_feild.dart';
+import 'package:conversai/utils/custom_widgets.dart';
 import 'package:conversai/veiws/auth/components/already_have_an_account_acheck.dart';
 import 'package:flutter/material.dart';
-
+import 'package:conversai/app/constants.dart';
 import '../../Login/login_screen.dart';
 
-class SignUpForm extends StatelessWidget {
-  const SignUpForm({
-    Key? key,
-  }) : super(key: key);
+class SignUpForm extends StatefulWidget {
+  const SignUpForm({super.key});
+
+  @override
+  _SignUpFormState createState() => _SignUpFormState();
+}
+
+class _SignUpFormState extends State<SignUpForm> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Form(
+      key: _formKey,
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: defaultPadding),
-            child: TextFormField(
-              keyboardType: TextInputType.name,
-              textInputAction: TextInputAction.next,
-              cursorColor: kPrimaryColor,
-              decoration: const InputDecoration(
-                hintText: "Full Name",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.person),
-                ),
-              ),
-            ),
+          const CustomTextField(
+            hintText: "Full Name",
+            icon: Icons.person,
+            keyboardType: TextInputType.name,
+            validator: AppCustomWidgets.validateName,
           ),
-          TextFormField(
+          const CustomTextField(
+            hintText: "Your Email",
+            icon: Icons.email,
             keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-            cursorColor: kPrimaryColor,
-            onSaved: (email) {},
-            decoration: const InputDecoration(
-              hintText: "Your email",
-              prefixIcon: Padding(
-                padding: EdgeInsets.all(defaultPadding),
-                child: Icon(Icons.email),
-              ),
-            ),
+            validator: AppCustomWidgets.validateEmail,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: defaultPadding),
-            child: TextFormField(
-              keyboardType: TextInputType.phone,
-              textInputAction: TextInputAction.next,
-              cursorColor: kPrimaryColor,
-              decoration: const InputDecoration(
-                hintText: "Your phone number",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.phone),
-                ),
-              ),
-            ),
+          const CustomTextField(
+            hintText: "Your Phone Number",
+            icon: Icons.phone,
+            keyboardType: TextInputType.phone,
+            validator: AppCustomWidgets.validatePhone,
           ),
-          TextFormField(
-            textInputAction: TextInputAction.next,
+          CustomTextField(
+            hintText: "Your Password",
+            icon: Icons.lock,
             obscureText: true,
-            cursorColor: kPrimaryColor,
-            decoration: const InputDecoration(
-              hintText: "Your password",
-              prefixIcon: Padding(
-                padding: EdgeInsets.all(defaultPadding),
-                child: Icon(Icons.lock),
-              ),
-            ),
+            controller: _passwordController,
+            validator: AppCustomWidgets.validatePassword,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: defaultPadding),
-            child: TextFormField(
-              textInputAction: TextInputAction.done,
-              obscureText: true,
-              cursorColor: kPrimaryColor,
-              decoration: const InputDecoration(
-                hintText: "Confirm password",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.lock),
-                ),
-              ),
+          CustomTextField(
+            hintText: "Confirm Password",
+            icon: Icons.lock,
+            obscureText: true,
+            controller: _confirmPasswordController,
+            validator: (value) => AppCustomWidgets.validateConfirmPassword(
+              value,
+              _passwordController.text,
             ),
           ),
           const SizedBox(height: defaultPadding / 2),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                //Handle successful sign-up
+              }
+            },
             child: Text("Sign Up".toUpperCase()),
           ),
           const SizedBox(height: defaultPadding),
@@ -95,11 +74,7 @@ class SignUpForm extends StatelessWidget {
             press: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return const LoginScreen();
-                  },
-                ),
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
               );
             },
           ),
