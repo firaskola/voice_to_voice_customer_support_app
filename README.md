@@ -23,9 +23,9 @@ Automatically unmutes the mic after the AI responds.
 
 #### Clone the Repository:
 
-`git clone https://github.com/your-username/conversai.git`
+`git clone https://github.com/firaskola/voice_to_voice_customer_support_app.git`
 
-`cd conversai`
+`cd voice_to_voice_customer_support_app`
 
 #### Install Dependencies:
 `flutter pub get`
