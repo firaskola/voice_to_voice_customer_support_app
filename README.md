@@ -1,4 +1,4 @@
-# ConversAI - Voice Chat App
+# ConversAI - AI Voice Support Assistant Chat App
 ## INTRODUCTION
 
 ConversAI is a AI based Customer Support Assistant application build using flutter and firebase that allows users to interact with an AI assistant using voice commands. The app leverages Firebase for authentication and data storage, OpenAI's GPT for conversational AI, and Flutter's speech-to-text and text-to-speech libraries for seamless voice interactions
