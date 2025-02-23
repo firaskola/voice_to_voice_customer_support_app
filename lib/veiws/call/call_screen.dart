@@ -22,7 +22,7 @@ class TapToTalkScreen extends StatefulWidget {
 class _TapToTalkScreenState extends State<TapToTalkScreen> {
   bool isListening = false;
   bool isProcessing = false;
-  String displayText = "Hold & Speak";
+  String displayText = "Tap to Unmute Mic";
   FlutterTts flutterTts = FlutterTts();
   stt.SpeechToText speech = stt.SpeechToText();
   String transcription = "";
@@ -71,34 +71,47 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
     });
   }
 
-  void _onTapDown() async {
-    if (await PermissionsHelper.isMicrophonePermissionGranted()) {
+  void _toggleListening() async {
+    if (!isListening) {
+      if (await PermissionsHelper.isMicrophonePermissionGranted()) {
+        setState(() {
+          isListening = true;
+          displayText = "Listening...";
+        });
+
+        await speech.listen(
+          onResult: (result) {
+            setState(() {
+              transcription = result.recognizedWords;
+            });
+            print("Transcription: $transcription");
+
+            // Automatically send prompt when user stops speaking
+            if (result.finalResult) {
+              _sendPromptToOpenAI();
+            }
+          },
+        );
+      } else {
+        _requestMicrophonePermission();
+      }
+    } else {
       setState(() {
-        isListening = true;
-        displayText = "Listening...";
+        isListening = false;
+        displayText = "Tap to Unmute Mic";
       });
 
-      await speech.listen(
-        onResult: (result) {
-          setState(() {
-            transcription = result.recognizedWords;
-          });
-          print("Transcription: $transcription");
-        },
-      );
-    } else {
-      _requestMicrophonePermission();
+      speech.stop();
     }
   }
 
-  void _onTapUp() async {
+  Future<void> _sendPromptToOpenAI() async {
+    if (transcription.isEmpty) return;
+
     setState(() {
-      isListening = false;
       isProcessing = true;
       displayText = "Processing...";
     });
-
-    speech.stop();
 
     try {
       if (_user == null) {
@@ -133,10 +146,30 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
       // Speak the response using TTS
       await TextToSpeechService.speak(flutterTts, responseText);
 
-      setState(() {
-        isProcessing = false;
-        displayText = "Hold & Speak";
-        transcription = "";
+      // Automatically unmute the mic and restart listening after TTS finishes
+      flutterTts.setCompletionHandler(() async {
+        setState(() {
+          isProcessing = false;
+          displayText = "Listening...";
+          isListening = true;
+        });
+
+        // Restart speech recognition
+        if (await PermissionsHelper.isMicrophonePermissionGranted()) {
+          await speech.listen(
+            onResult: (result) {
+              setState(() {
+                transcription = result.recognizedWords;
+              });
+              print("Transcription: $transcription");
+
+              // Automatically send prompt when user stops speaking
+              if (result.finalResult) {
+                _sendPromptToOpenAI();
+              }
+            },
+          );
+        }
       });
     } catch (e) {
       setState(() {
@@ -151,6 +184,16 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
     const apiKey = ""; // Replace with your OpenAI API key
     const apiUrl = "https://api.openai.com/v1/chat/completions";
 
+    // Include the chat history for conversational awareness
+    final messages = [
+      {"role": "system", "content": "You are a helpful assistant."},
+      ...chatMessages.map((msg) => {
+            "role": msg["role"],
+            "content": msg["message"],
+          }),
+      {"role": "user", "content": prompt},
+    ];
+
     final response = await http.post(
       Uri.parse(apiUrl),
       headers: {
@@ -159,10 +202,7 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
       },
       body: jsonEncode({
         "model": "gpt-3.5-turbo", // or "gpt-4"
-        "messages": [
-          {"role": "system", "content": "You are a helpful assistant."},
-          {"role": "user", "content": prompt}
-        ],
+        "messages": messages,
         "max_tokens": 150, // Limit response length
         "temperature": 0.7, // Adjust creativity (0 = strict, 1 = creative)
       }),
@@ -199,7 +239,7 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
             child: chatMessages.isEmpty
                 ? const Center(
                     child: Text(
-                      "Press and hold the mic button below and speak.",
+                      "Unmute the mic and start speaking.",
                       textAlign: TextAlign.center, // Center-align the text
                       style: TextStyle(
                         fontStyle: FontStyle.normal,
@@ -257,9 +297,12 @@ class _TapToTalkScreenState extends State<TapToTalkScreen> {
                         color: kPrimaryColor),
                   ),
                 ),
-                MicButton(
-                  onTapDown: _onTapDown,
-                  onTapUp: _onTapUp,
+                IconButton(
+                  icon: Icon(
+                    isListening ? Icons.mic_off : Icons.mic,
+                    color: kPrimaryColor,
+                  ),
+                  onPressed: _toggleListening,
                 ),
               ],
             ),
